@@ -10,7 +10,7 @@ on:
   # Allow triggering manually:
   # curl -XPOST -d '{"event_type":"index"}' \
   #  "-HAuthorization: Bearer <token>" \
-  #   https://api.github.com/repos/clangd/clangd-llvm-index/dispatches
+  #   https://api.github.com/repos/clangd/llvm-remote-index/dispatches
   repository_dispatch: { types: index }
 jobs:
   # Pick LLVM commit that is not failing buildbot tests and create release.
@@ -36,8 +36,8 @@ jobs:
         id: create_release
         env: { GITHUB_TOKEN: "${{ secrets.RELEASE_TOKEN }}" }
         with:
-          tag_name: index_snapshot_${{ env.RELEASE_DATE }}
-          release_name: index snapshot ${{ env.RELEASE_DATE }} @${{ env.RELEASE_COMMIT_SHORT }}
+          tag_name: ${{ env.RELEASE_COMMIT_SHORT }}
+          release_name: @${{ env.RELEASE_COMMIT_SHORT }}
           body: |
             index snapshot from ${{ env.RELEASE_DATE }}.
 
@@ -51,7 +51,6 @@ jobs:
     needs: prepare
     runs-on: ${{ matrix.config.os }}
     strategy:
-      fail-fast: false
       matrix:
         config:
           - name: linux
@@ -67,8 +66,7 @@ jobs:
         run: ${{ matrix.config.preinstall }}
       - name: Set environment variables
         run: |
-          echo ::set-env name=CLANGD_DIR::clangd_index_snapshot_${{ needs.prepare.outputs.release_date }}
-        shell: bash
+          echo ::set-env name=CLANGD_DIR::clangd_index_snapshot_${{ needs.prepare.release_date }}
       - name: Clone LLVM
         uses: actions/checkout@v2
         with:
@@ -85,13 +83,11 @@ jobs:
 
           cmake -G Ninja -S llvm-project/llvm -B ${{ env.CLANGD_DIR }}
           "-DLLVM_ENABLE_PROJECTS=clang;clang-tools-extra"
-          "-DLLVM_ENABLE_ASSERTIONS=OFF"
-          "-DCMAKE_BUILD_TYPE=Release"
-          "-DCMAKE_EXPORT_COMPILE_COMMANDS=On"
+          "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON"
           ${{ matrix.config.cmake }}
       - name: Build the LLVM to make sure generated files are created for indexing
         run: |
-          ninja -C ${{ env.CLANGD_DIR }}
+          ninja -C ${{ env.CLANGD_DIR }} all
       - name: Fetch clangd-indexer
         run: |
           ./download_clangd_binaries.py
@@ -104,11 +100,6 @@ jobs:
         run: >
           7z a llvm-index.zip
           llvm.idx
-      - name: Upload index artifact
-        uses: actions/upload-artifact@v1
-        with:
-          name: ${{ matrix.config.name }}
-          path: llvm-index.zip
       - name: Upload upload generated index to release
         uses: actions/upload-release-asset@v1
         env: { GITHUB_TOKEN: "${{ secrets.RELEASE_TOKEN }}" }
