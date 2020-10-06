@@ -13,28 +13,26 @@ on:
   #   https://api.github.com/repos/clangd/llvm-remote-index/dispatches
   repository_dispatch: { types: index }
 jobs:
-  # Pick LLVM commit that is not failing buildbot tests and create release.
-  prepare:
+  index:
     runs-on: ubuntu-latest
     steps:
       - name: Clone scripts
         uses: actions/checkout@v2
-      - name: Install NPM dependencies
-        run: npm install --prefix .github/actions/pick
       - name: Pick last successful commit
         id: pick
-        uses: ./.github/actions/pick
+        uses: clangd/actions/.github/actions/pick@v0.1.0
         with:
           repo: llvm/llvm-project
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: Compute release info
         run: |
-          echo ::set-env name=RELEASE_COMMIT_SHORT::$(printf "%.12s" ${{ steps.pick.outputs.sha }})
-          echo ::set-env name=RELEASE_DATE::$(date -u +%Y%m%d)
+          echo "RELEASE_COMMIT_SHORT=$(printf \"%.12s\" ${{ steps.pick.outputs.sha }})" >> $GITHUB_ENV
+          echo "RELEASE_DATE=$(date -u +%Y%m%d)" >> $GITHUB_ENV
       - name: Create release
         uses: actions/create-release@master
         id: create_release
-        env: { GITHUB_TOKEN: "${{ secrets.RELEASE_TOKEN }}" }
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ env.RELEASE_COMMIT_SHORT }}
           release_name: ${{ env.RELEASE_COMMIT_SHORT }}
@@ -42,41 +40,20 @@ jobs:
             index snapshot from ${{ env.RELEASE_DATE }}.
 
             Built from llvm/llvm-project@${{ steps.pick.outputs.sha }}.
-    outputs:
-      release_date: ${{ env.RELEASE_DATE }}
-      upload_url: ${{ steps.create_release.outputs.upload_url }}
-      release_commit: ${{ steps.pick.outputs.sha }}
-  index:
-    name: Index LLVM on ${{ matrix.config.name }}
-    needs: prepare
-    runs-on: ${{ matrix.config.os }}
-    strategy:
-      matrix:
-        config:
-          - name: linux
-            os: ubuntu-latest
-            preinstall: sudo apt-get install ninja-build build-essential
-            cmake: >
-              "-DCMAKE_C_COMPILER=clang"
-              "-DCMAKE_CXX_COMPILER=clang++"
-    steps:
       - name: Clone scripts
         uses: actions/checkout@v2
       - name: Install system tools
-        run: ${{ matrix.config.preinstall }}
+        run: sudo apt-get install ninja-build build-essential
       - name: Set environment variables
         run: |
-          echo ::set-env name=CLANGD_DIR::clangd_index_snapshot_${{ needs.prepare.release_date }}
+          echo "CLANGD_DIR=clangd_index_snapshot_${{ env.RELEASE_DATE }}" >> $GITHUB_ENV
       - name: Clone LLVM
         uses: actions/checkout@v2
         with:
           repository: llvm/llvm-project
           path: llvm-project
-          ref: ${{ needs.prepare.outputs.release_commit }}
-      # Build LLVM using CMake + Ninja. This step is needed to generate all
-      # files in the project that will be needed later. This is quite
-      # unfortunate because this step takes a very long time, but it is
-      # required for a valid index.
+          ref: ${{ steps.pick.output.sha }}
+      # Create compile_commands.json for the indexer and build generated files.
       - name: CMake
         run: >
           mkdir ${{ env.CLANGD_DIR }}
@@ -84,18 +61,21 @@ jobs:
           cmake -G Ninja -S llvm-project/llvm -B ${{ env.CLANGD_DIR }}
           "-DLLVM_ENABLE_PROJECTS=clang;clang-tools-extra"
           "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON"
-          ${{ matrix.config.cmake }}
+          "-DCMAKE_C_COMPILER=clang"
+          "-DCMAKE_CXX_COMPILER=clang++"
+          "-DCLANG_INCLUDE_TESTS=OFF"
+          "-DLLVM_INCLUDE_TESTS=OFF"
       - name: Build the LLVM to make sure generated files are created for indexing
         run: |
-          ninja -C ${{ env.CLANGD_DIR }} all
+          ninja -C ${{ env.CLANGD_DIR }} -t targets rule CUSTOM_COMMAND | grep -E "\.(cpp|h|inc)\$" | grep -v "tests\?/" | xargs ninja -C ${{ env.CLANGD_DIR }}
       - name: Fetch clangd-indexer
         run: |
           ./download_clangd_binaries.py
           unzip *.zip
-          echo ::set-env name=CLANGD_INDEXER_BIN::$(find . -type f -iwholename "./clangd*/bin/clangd-indexer")
+          echo "CLANGD_INDEXER_BIN=$(find . -type f -iwholename \"./clangd*/bin/clangd-indexer\")" >> GITHUB_ENV
       - name: Run clangd-indexer
         run: |
-          ./index_project.py ${{ env.CLANGD_DIR }}/compile_commands.json llvm.idx --clangd-indexer-bin ${{ env.CLANGD_INDEXER_BIN }}
+          ${{ env.CLANGD_INDEXER_BIN }} --executor=all-TUs ${{env.CLANGD_DIR}}/compile_commands.json > llvm.idx
       - name: Archive LLVM index
         run: >
           7z a llvm-index.zip
@@ -104,7 +84,7 @@ jobs:
         uses: actions/upload-release-asset@v1
         env: { GITHUB_TOKEN: "${{ secrets.RELEASE_TOKEN }}" }
         with:
-          upload_url: ${{ needs.prepare.outputs.upload_url }}
-          asset_name: llvm-index-${{ matrix.config.name }}-${{ needs.prepare.outputs.release_date }}.zip
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_name: llvm-index-${{ env.RELEASE_DATE }}.zip
           asset_path: llvm-index.zip
           asset_content_type: application/zip

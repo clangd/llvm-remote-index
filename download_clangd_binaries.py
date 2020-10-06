@@ -7,15 +7,19 @@ import json
 
 
 def download(repository, output_dir, target_os):
+    # Traverse releases in chronological order.
     request = requests.get(
-        f'https://api.github.com/repos/{repository}/releases/latest')
-    release = json.loads(request.text)
-    for asset in release['assets']:
-        if asset['name'].startswith(f'clangd-{target_os}'):
-            download_url = asset['browser_download_url']
-            downloaded_file = requests.get(download_url)
-            with open(os.path.join(output_dir, asset['name']), 'wb') as f:
-                f.write(downloaded_file.content)
+        f'https://api.github.com/repos/{repository}/releases')
+    for release in json.loads(request.text):
+        for asset in release['assets']:
+            if asset['name'].startswith(f'clangd-{target_os}'):
+                download_url = asset['browser_download_url']
+                downloaded_file = requests.get(download_url)
+                with open(os.path.join(output_dir, asset['name']), 'wb') as f:
+                    f.write(downloaded_file.content)
+                # The latest release is downloaded, there is nothing else to
+                # do.
+                return
 
 
 def main():
