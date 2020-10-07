@@ -1,6 +1,6 @@
 # Workflow to index LLVM project.
 #
-# Because the build takes more than an hour, our GITHUB_TOKEN credentials may
+# Because the indexingtakes more than an hour, our GITHUB_TOKEN credentials may
 # expire. A token `secrets.RELEASE_TOKEN` must exist with public_repo scope.
 name: Index LLVM project
 on:
@@ -37,13 +37,9 @@ jobs:
           tag_name: ${{ env.RELEASE_COMMIT_SHORT }}
           release_name: ${{ env.RELEASE_COMMIT_SHORT }}
           body: |
-            index snapshot from ${{ env.RELEASE_DATE }}.
-
-            Built from llvm/llvm-project@${{ steps.pick.outputs.sha }}.
-      - name: Clone scripts
-        uses: actions/checkout@v2
+            Index snapshot built from llvm/llvm-project@${{ steps.pick.outputs.sha }} on ${{ env.RELEASE_DATE }}.
       - name: Install system tools
-        run: sudo apt-get install ninja-build build-essential
+        run: sudo apt-get install ninja-build build-essential swig python3-dev libedit-dev libncurses5-dev
       - name: Set environment variables
         run: |
           echo "CLANGD_DIR=clangd_index_snapshot_${{ env.RELEASE_DATE }}" >> $GITHUB_ENV
@@ -59,20 +55,18 @@ jobs:
           mkdir ${{ env.CLANGD_DIR }}
 
           cmake -G Ninja -S llvm-project/llvm -B ${{ env.CLANGD_DIR }}
-          "-DLLVM_ENABLE_PROJECTS=clang;clang-tools-extra"
+          "-DLLVM_ENABLE_PROJECTS=all"
           "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON"
           "-DCMAKE_C_COMPILER=clang"
           "-DCMAKE_CXX_COMPILER=clang++"
-          "-DCLANG_INCLUDE_TESTS=OFF"
-          "-DLLVM_INCLUDE_TESTS=OFF"
-      - name: Build the LLVM to make sure generated files are created for indexing
+      - name: Build generated files to ensure valid index
         run: |
           ninja -C ${{ env.CLANGD_DIR }} -t targets rule CUSTOM_COMMAND | grep -E "\.(cpp|h|inc)\$" | grep -v "tests\?/" | xargs ninja -C ${{ env.CLANGD_DIR }}
       - name: Fetch clangd-indexer
         run: |
-          ./download_clangd_binaries.py
+          ./download_clangd_binaries.py --repository kirillbobyrev/indexing-tools
           unzip *.zip
-          echo "CLANGD_INDEXER_BIN=$(find . -type f -iwholename \"./clangd*/bin/clangd-indexer\")" >> GITHUB_ENV
+          echo "CLANGD_INDEXER_BIN=$(find . -type f -name \"clangd-indexer\")" >> GITHUB_ENV
       - name: Run clangd-indexer
         run: |
           ${{ env.CLANGD_INDEXER_BIN }} --executor=all-TUs ${{env.CLANGD_DIR}}/compile_commands.json > llvm.idx
