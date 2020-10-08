@@ -6,6 +6,7 @@ import requests
 import sys
 
 
+# Returns True if the download was successful.
 def download(repository, output_dir, target_os):
     # Traverse releases in chronological order.
     request = requests.get(
@@ -19,8 +20,8 @@ def download(repository, output_dir, target_os):
                     f.write(downloaded_file.content)
                 # The latest release is downloaded, there is nothing else to
                 # do.
-                return 0
-    return 1
+                return True
+    return False
 
 
 def main():
@@ -42,7 +43,9 @@ def main():
         choices=['linux', 'mac', 'windows'],
         default='linux')
     args = parser.parse_args()
-    sys.exit(download(args.repository, args.output_dir, args.target_os))
+    success = download(args.repository, args.output_dir, args.target_os)
+    if not success:
+        sys.exit(1)
 
 
 if __name__ == '__main__':
