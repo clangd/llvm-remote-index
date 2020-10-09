@@ -68,7 +68,7 @@ jobs:
         run: |
           # FIXME: Move indexing-tools to clangd org or wait for the merge with
           # clangd/clangd.
-          ./download_clangd_binaries.py --repository clangd/indexing-tools
+          ./download_clangd_binaries.py --repository kirillbobyrev/indexing-tools
           unzip *.zip
           echo "CLANGD_INDEXER_BIN=$(find . -name 'clangd-indexer')" >> $GITHUB_ENV
       - name: Run clangd-indexer
