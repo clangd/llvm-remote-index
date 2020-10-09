@@ -1,0 +1,87 @@
+# Workflow to index LLVM project.
+#
+# Because the indexing takes more than an hour, our GITHUB_TOKEN credentials may
+# expire. A token `secrets.RELEASE_TOKEN` must exist with public_repo scope.
+name: Index LLVM project
+on:
+  # Run daily at 0:20 (UTC) (arbitrary time)
+  schedule:
+    - cron: "20 0 * * *"
+  # Allow triggering manually:
+  # curl -XPOST -d '{"event_type":"index"}' \
+  #  "-HAuthorization: Bearer <token>" \
+  #   https://api.github.com/repos/clangd/llvm-remote-index/dispatches
+  repository_dispatch: { types: index }
+jobs:
+  index:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clone scripts
+        uses: actions/checkout@v2
+      - name: Pick last successful commit
+        id: pick
+        uses: clangd/actions/.github/actions/pick@v0.1.0
+        with:
+          repo: llvm/llvm-project
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Compute release info
+        run: |
+          echo "RELEASE_COMMIT_SHORT=$(printf \"%.12s\" ${{ steps.pick.outputs.sha }})" >> $GITHUB_ENV
+          echo "RELEASE_DATE=$(date -u +%Y%m%d)" >> $GITHUB_ENV
+      - name: Create release
+        uses: actions/create-release@v1
+        id: create_release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ env.RELEASE_COMMIT_SHORT }}
+          release_name: ${{ env.RELEASE_COMMIT_SHORT }}
+          body: |
+            Index snapshot built from llvm/llvm-project@${{ steps.pick.outputs.sha }} on ${{ env.RELEASE_DATE }}.
+      - name: Install system tools
+        run: sudo apt-get install ninja-build build-essential swig python3-dev libedit-dev libncurses5-dev
+      - name: Set environment variables
+        run: |
+          echo "CLANGD_DIR=clangd_index_snapshot_${{ env.RELEASE_DATE }}" >> $GITHUB_ENV
+      - name: Clone LLVM
+        uses: actions/checkout@v2
+        with:
+          repository: llvm/llvm-project
+          path: llvm-project
+          ref: ${{ steps.pick.output.sha }}
+      # Create compile_commands.json for the indexer and build generated files.
+      - name: CMake
+        run: >
+          mkdir ${{ env.CLANGD_DIR }}
+
+          cmake -G Ninja -S llvm-project/llvm -B ${{ env.CLANGD_DIR }}
+          "-DLLVM_ENABLE_PROJECTS=all"
+          "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON"
+          "-DCMAKE_C_COMPILER=clang"
+          "-DCMAKE_CXX_COMPILER=clang++"
+      - name: Build generated files to ensure valid index
+        run: >
+          ninja -C ${{ env.CLANGD_DIR }} -t targets rule CUSTOM_COMMAND |
+          grep -E "\.(cpp|h|inc)\$" |
+          xargs ninja -C ${{ env.CLANGD_DIR }}
+      - name: Fetch clangd-indexer
+        run: |
+          # FIXME: Move indexing-tools to clangd org or wait for the merge with
+          # clangd/clangd.
+          ./download_clangd_binaries.py --repository clangd/indexing-tools
+          unzip *.zip
+          echo "CLANGD_INDEXER_BIN=$(find . -name 'clangd-indexer')" >> $GITHUB_ENV
+      - name: Run clangd-indexer
+        run: |
+          ${{ env.CLANGD_INDEXER_BIN }} --executor=all-TUs ${{env.CLANGD_DIR}}/compile_commands.json > llvm.idx
+      - name: Archive LLVM index
+        run: >
+          7z a llvm-index.zip llvm.idx
+      - name: Upload generated index to release
+        uses: actions/upload-release-asset@v1
+        env: { GITHUB_TOKEN: "${{ secrets.RELEASE_TOKEN }}" }
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_name: llvm-index-${{ env.RELEASE_DATE }}.zip
+          asset_path: llvm-index.zip
+          asset_content_type: application/zip
