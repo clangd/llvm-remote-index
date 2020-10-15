@@ -7,7 +7,7 @@ import sys
 
 
 # Returns True if the download was successful.
-def download(repository, output_dir, target_os):
+def download(repository, output_dir, target_os, output_name):
     # Traverse releases in chronological order.
     request = requests.get(
         f'https://api.github.com/repos/{repository}/releases')
@@ -16,7 +16,9 @@ def download(repository, output_dir, target_os):
             if asset.get('name', '').startswith(f'clangd-{target_os}'):
                 download_url = asset['browser_download_url']
                 downloaded_file = requests.get(download_url)
-                with open(os.path.join(output_dir, asset['name']), 'wb') as f:
+                if output_name is None:
+                    output_name = asset['name']
+                with open(os.path.join(output_dir, output_name), 'wb') as f:
                     f.write(downloaded_file.content)
                 # The latest release is downloaded, there is nothing else to
                 # do.
@@ -42,8 +44,14 @@ def main():
         help='Operating system to download tools for. [default: linux]',
         choices=['linux', 'mac', 'windows'],
         default='linux')
+    parser.add_argument('--output-name',
+                        type=str,
+                        help=('Tools will be stored with this name, will use '
+                              'asset name by default'),
+                        default=None)
     args = parser.parse_args()
-    success = download(args.repository, args.output_dir, args.target_os)
+    success = download(args.repository, args.output_dir, args.target_os,
+                       args.output_name)
     if not success:
         sys.exit(1)
 
