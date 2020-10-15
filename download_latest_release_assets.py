@@ -45,7 +45,7 @@ def main():
         'Asset will be stored with this name, will use asset name by default',
         default=None)
     parser.add_argument(
-        '--asset_prefix',
+        '--asset-prefix',
         type=str,
         help='The required prefix to match for asset to download.',
         required=True)

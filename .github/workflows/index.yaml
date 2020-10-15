@@ -71,7 +71,7 @@ jobs:
           ./download_latest_release_assets.py
             --repository kirillbobyrev/indexing-tools
             --output-name clangd-linux.zip
-            --asset_prefix clangd-linux-snapshot
+            --asset-prefix clangd-linux-snapshot
 
           unzip clangd-linux.zip
 
