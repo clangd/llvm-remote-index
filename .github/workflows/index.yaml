@@ -65,12 +65,17 @@ jobs:
           grep -E "\.(cpp|h|inc)\$" |
           xargs ninja -C ${{ env.CLANGD_DIR }}
       - name: Fetch clangd-indexer
-        run: |
+        run: >
           # FIXME: Move indexing-tools to clangd org or wait for the merge with
           # clangd/clangd.
-          ./download_clangd_binaries.py --repository kirillbobyrev/indexing-tools
-          unzip *.zip
-          echo "CLANGD_INDEXER_BIN=$(find . -name 'clangd-indexer')" >> $GITHUB_ENV
+          ./download_clangd_binaries.py
+            --repository kirillbobyrev/indexing-tools
+            --output-name clangd-linux.zip
+
+          unzip clangd-linux.zip
+
+          echo "CLANGD_INDEXER_BIN=$(find . -name 'clangd-indexer')"
+            >> $GITHUB_ENV
       - name: Run clangd-indexer
         run: |
           ${{ env.CLANGD_INDEXER_BIN }} --executor=all-TUs ${{env.CLANGD_DIR}}/compile_commands.json > llvm.idx
