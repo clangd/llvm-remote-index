@@ -70,11 +70,11 @@ jobs:
           # clangd/clangd.
 
           ./download_latest_release_assets.py
-            --repository kirillbobyrev/indexing-tools
-            --output-name clangd-linux.zip
-            --asset-prefix clangd-linux-snapshot
+            --repository clangd/clangd
+            --output-name clangd-tools-linux.zip
+            --asset-prefix clangd-indexing-tools-linux
 
-          unzip clangd-linux.zip
+          unzip clangd-tools-linux.zip
 
           echo "CLANGD_INDEXER_BIN=$(find . -name 'clangd-indexer')"
             >> $GITHUB_ENV
