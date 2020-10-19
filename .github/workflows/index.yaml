@@ -70,17 +70,18 @@ jobs:
           # clangd/clangd.
 
           ./download_latest_release_assets.py
-            --repository clangd/clangd
-            --output-name clangd-indexing-tools.zip
-            --asset-prefix clangd-indexing-tools-linux
+          --repository clangd/clangd
+          --output-name clangd-indexing-tools.zip
+          --asset-prefix clangd-indexing-tools-linux
 
           unzip clangd-indexing-tools.zip
 
           echo "CLANGD_INDEXER_BIN=$(find . -name 'clangd-indexer')"
-            >> $GITHUB_ENV
+          >> $GITHUB_ENV
       - name: Run clangd-indexer
-        run: |
-          ${{ env.CLANGD_INDEXER_BIN }} --executor=all-TUs ${{env.CLANGD_DIR}}/compile_commands.json > llvm.idx
+        run: >
+          ${{ env.CLANGD_INDEXER_BIN }} --executor=all-TUs
+          ${{env.CLANGD_DIR}}/compile_commands.json > llvm.idx
       - name: Archive LLVM index
         run: >
           7z a llvm-index.zip llvm.idx
