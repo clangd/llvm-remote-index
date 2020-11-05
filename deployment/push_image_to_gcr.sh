@@ -11,5 +11,6 @@ set -x
 gcloud auth configure-docker
 docker tag "$IMAGE_NAME" "$HOST_NAME/$PROJECT_ID/$IMAGE_NAME"
 docker push "$HOST_NAME/$PROJECT_ID/$IMAGE_NAME"
+NEW_IMAGE_DIGEST=$(docker image inspect --format='{{index .RepoDigests 0}}' "$IMAGE_NAME")
 
-kubectl set image "deployment/$IMAGE_NAME" "$IMAGE_NAME=gcr.io/${PROJECT_ID}/${IMAGE_NAME}:latest"
+kubectl set image "deployment/$IMAGE_NAME" "$IMAGE_NAME=$NEW_IMAGE_DIGEST"
