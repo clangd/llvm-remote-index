@@ -49,7 +49,7 @@ jobs:
           repository: llvm/llvm-project
           path: llvm-project
           ref: ${{ steps.pick.output.sha }}
-      # Create compile_commands.json for the indexer and build generated files.
+      # Build generated files.
       - name: CMake
         run: >
           mkdir ${{ env.CLANGD_DIR }}
@@ -57,8 +57,6 @@ jobs:
           cmake -G Ninja -S llvm-project/llvm -B ${{ env.CLANGD_DIR }}
           "-DLLVM_ENABLE_PROJECTS=all"
           "-DCMAKE_BUILD_TYPE=Release"
-          "-DLLVM_ENABLE_ASSERTIONS=On"
-          "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON"
           "-DCMAKE_C_COMPILER=clang"
           "-DCMAKE_CXX_COMPILER=clang++"
       - name: Build generated files to ensure valid index
@@ -66,6 +64,16 @@ jobs:
           ninja -C ${{ env.CLANGD_DIR }} -t targets rule CUSTOM_COMMAND |
           grep -E "\.(cpp|h|inc)\$" |
           xargs ninja -C ${{ env.CLANGD_DIR }}
+      # Create compile_commands.json for the indexer: Debug build type is needed
+      # to index code behind #ifndef NDEBUG and enable assertions. At this point
+      # all source files were generated and all we need is new
+      # compile_commands.json.
+      - name: Generate compile_commands
+        run: >
+          cmake -G Ninja -S llvm-project/llvm -B ${{ env.CLANGD_DIR }}
+          "-DLLVM_ENABLE_PROJECTS=all"
+          "-DCMAKE_BUILD_TYPE=Debug"
+          "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON"
       - name: Fetch clangd-indexer
         run: >
           # FIXME: Move indexing-tools to clangd org or wait for the merge with
