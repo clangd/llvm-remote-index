@@ -56,6 +56,8 @@ jobs:
 
           cmake -G Ninja -S llvm-project/llvm -B ${{ env.CLANGD_DIR }}
           "-DLLVM_ENABLE_PROJECTS=all"
+          "-DCMAKE_BUILD_TYPE=Release"
+          "-DLLVM_ENABLE_ASSERTIONS=On"
           "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON"
           "-DCMAKE_C_COMPILER=clang"
           "-DCMAKE_CXX_COMPILER=clang++"
