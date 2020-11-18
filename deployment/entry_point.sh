@@ -17,4 +17,4 @@ cron
 $INDEX_FETCHER_CMD
 
 # Start the server.
-/clangd-index-server $INDEX_FILE $INDEXER_PROJECT_ROOT
+/clangd-index-server $INDEX_FILE $INDEXER_PROJECT_ROOT -log-public
