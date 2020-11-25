@@ -42,7 +42,7 @@ jobs:
         run: sudo apt-get install ninja-build build-essential swig python3-dev libedit-dev libncurses5-dev
       - name: Set environment variables
         run: |
-          echo "CLANGD_DIR=clangd_index_snapshot_${{ env.RELEASE_DATE }}" >> $GITHUB_ENV
+          echo "CMAKE_BUILD_DIR=llvm-project/build" >> $GITHUB_ENV
       - name: Clone LLVM
         uses: actions/checkout@v2
         with:
@@ -52,25 +52,25 @@ jobs:
       # Build generated files.
       - name: CMake
         run: >
-          mkdir ${{ env.CLANGD_DIR }}
+          mkdir ${{ env.CMAKE_BUILD_DIR }}
 
-          cmake -G Ninja -S llvm-project/llvm -B ${{ env.CLANGD_DIR }}
+          cmake -G Ninja -S llvm-project/llvm -B ${{ env.CMAKE_BUILD_DIR }}
           "-DLLVM_ENABLE_PROJECTS=all"
           "-DCMAKE_BUILD_TYPE=Release"
           "-DCMAKE_C_COMPILER=clang"
           "-DCMAKE_CXX_COMPILER=clang++"
       - name: Build generated files to ensure valid index
         run: >
-          ninja -C ${{ env.CLANGD_DIR }} -t targets rule CUSTOM_COMMAND |
+          ninja -C ${{ env.CMAKE_BUILD_DIR }} -t targets rule CUSTOM_COMMAND |
           grep -E "\.(cpp|h|inc)\$" |
-          xargs ninja -C ${{ env.CLANGD_DIR }}
+          xargs ninja -C ${{ env.CMAKE_BUILD_DIR }}
       # Create compile_commands.json for the indexer: Debug build type is needed
       # to index code behind #ifndef NDEBUG and enable assertions. At this point
       # all source files were generated and all we need is new
       # compile_commands.json.
       - name: Generate compile_commands
         run: >
-          cmake -G Ninja -S llvm-project/llvm -B ${{ env.CLANGD_DIR }}
+          cmake -G Ninja -S llvm-project/llvm -B ${{ env.CMAKE_BUILD_DIR }}
           "-DLLVM_ENABLE_PROJECTS=all"
           "-DCMAKE_BUILD_TYPE=Debug"
           "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON"
@@ -91,7 +91,7 @@ jobs:
       - name: Run clangd-indexer
         run: >
           ${{ env.CLANGD_INDEXER_BIN }} --executor=all-TUs
-          ${{env.CLANGD_DIR}}/compile_commands.json > llvm.idx
+          ${{env.CMAKE_BUILD_DIR}}/compile_commands.json > llvm.idx
       - name: Archive LLVM index
         run: >
           7z a llvm-index.zip llvm.idx
