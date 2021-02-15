@@ -18,15 +18,16 @@ jobs:
     steps:
       - name: Clone scripts
         uses: actions/checkout@v2
-      - name: Pick last successful commit
-        id: pick
-        uses: clangd/actions/.github/actions/pick@v0.1.0
+      - name: Clone LLVM and compute release info
+        uses: actions/checkout@v2
         with:
-          repo: llvm/llvm-project
-          token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Compute release info
+          repository: llvm/llvm-project
+          path: llvm-project
+          # Use clangd/actions/pick after https://github.com/ramasilveyra/last-successful-gh-commit/issues/2 has been addressed.
+          ref: main
         run: |
-          echo "RELEASE_COMMIT_SHORT=$(printf '%.12s' ${{ steps.pick.outputs.sha }})" >> $GITHUB_ENV
+          echo "RELEASE_COMMIT=$(git rev-parse HEAD)" >> $GITHUB_ENV
+          echo "RELEASE_COMMIT_SHORT=$(printf '%.12s' $(git rev-parse HEAD))" >> $GITHUB_ENV
           echo "RELEASE_DATE=$(date -u +%Y%m%d)" >> $GITHUB_ENV
       - name: Create release
         uses: actions/create-release@v1
@@ -37,18 +38,12 @@ jobs:
           tag_name: ${{ env.RELEASE_COMMIT_SHORT }}
           release_name: ${{ env.RELEASE_COMMIT_SHORT }}
           body: |
-            Index snapshot built from llvm/llvm-project@${{ steps.pick.outputs.sha }} on ${{ env.RELEASE_DATE }}.
+            Index snapshot built from llvm/llvm-project@${{ env.RELEASE_COMMIT }} on ${{ env.RELEASE_DATE }}.
       - name: Install system tools
         run: sudo apt-get install ninja-build build-essential swig python3-dev libedit-dev libncurses5-dev
       - name: Set environment variables
         run: |
           echo "CMAKE_BUILD_DIR=llvm-project/build" >> $GITHUB_ENV
-      - name: Clone LLVM
-        uses: actions/checkout@v2
-        with:
-          repository: llvm/llvm-project
-          path: llvm-project
-          ref: ${{ steps.pick.output.sha }}
       # Build generated files.
       - name: CMake
         run: >
