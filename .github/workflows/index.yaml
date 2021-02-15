@@ -18,16 +18,17 @@ jobs:
     steps:
       - name: Clone scripts
         uses: actions/checkout@v2
-      - name: Clone LLVM and compute release info
+      - name: Clone LLVM
         uses: actions/checkout@v2
         with:
           repository: llvm/llvm-project
           path: llvm-project
           # Use clangd/actions/pick after https://github.com/ramasilveyra/last-successful-gh-commit/issues/2 has been addressed.
           ref: main
+      - name: Compute release info
         run: |
-          echo "RELEASE_COMMIT=$(git rev-parse HEAD)" >> $GITHUB_ENV
-          echo "RELEASE_COMMIT_SHORT=$(printf '%.12s' $(git rev-parse HEAD))" >> $GITHUB_ENV
+          echo "RELEASE_COMMIT=$(git -C llvm-project rev-parse HEAD)" >> $GITHUB_ENV
+          echo "RELEASE_COMMIT_SHORT=$(printf '%.12s' $(git -C llvm-project rev-parse HEAD))" >> $GITHUB_ENV
           echo "RELEASE_DATE=$(date -u +%Y%m%d)" >> $GITHUB_ENV
       - name: Create release
         uses: actions/create-release@v1
