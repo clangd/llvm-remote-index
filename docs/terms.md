@@ -4,7 +4,10 @@ Clangd remote index service is run on a best-effort basis by
 c-tools-team@google.com. This project is sponsored by Google but is not an
 official Google product. We also monitor the service on a best-effort basis and
 will do our best to deal with arising process (such as server not being
-responsive) within several working days.
+responsive) within several working days. We understand that productivity of
+remote index users would be affected in case of the server downtime and hence
+we will ensure that if the service is not responsive it will not stay
+unresponsive longer than 5% of the time a week.
 
 The service is aimed to improve the workflow of LLVM contributors and relieve
 the burden of having to use a very powerful machine for editing code by
