@@ -27,4 +27,5 @@ learn more about how we keep your data secure and where you can inspect the
 code.
 
 If you have any further questions or have any difficulties setting up the
-service, please reach out to kbobyrev@google.com or kadircet@google.com
+service, please open an issue on GitHub:
+[clangd/llvm-remote-index](https://github.com/clangd/llvm-remote-index/issues).
