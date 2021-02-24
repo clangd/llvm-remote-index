@@ -1,13 +1,13 @@
 # Terms and Conditions
 
-Clangd remote index service is run on a best-effort basis by
-c-tools-team@google.com. This project is sponsored by Google but is not an
-official Google product. We also monitor the service on a best-effort basis and
-will do our best to deal with arising process (such as server not being
-responsive) within several working days. We understand that productivity of
-remote index users would be affected in case of the server downtime and hence
-we will ensure that if the service is not responsive it will not stay
-unresponsive longer than 5% of the time a week.
+Clangd remote index service is run on a best-effort basis by C++ tools team at
+Google. Google donated the source code and cloud resources to the LLVM project,
+but is not an official Google product. We also monitor the service on a
+best-effort basis and will do our best to deal with arising problems (such as
+server not being responsive) within several working days. We understand that
+productivity of remote index users would be affected in case of the server
+downtime and hence we will ensure that if the service is not responsive it will
+not stay unresponsive longer than 5% of the time a week.
 
 The service is aimed to improve the workflow of LLVM contributors and relieve
 the burden of having to use a very powerful machine for editing code by
@@ -27,4 +27,4 @@ learn more about how we keep your data secure and where you can inspect the
 code.
 
 If you have any further questions or have any difficulties setting up the
-service, please reach out to c-tools-team@google.com
+service, please reach out to kbobyrev@google.com or kadircet@google.com
