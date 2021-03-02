@@ -4,10 +4,7 @@ Clangd remote index service is run on a best-effort basis by Clangd developers
 team. Google donates VM instances in GCP to the LLVM Foundation for hosting
 this service, and is not tied to it in any other way. We also monitor the
 service on a best-effort basis and will do our best to deal with arising
-problems (such as server not being responsive) within several working days. We
-understand that productivity of remote index users would be affected in case of
-the server downtime and hence we will ensure that if the service is not
-responsive it will not stay down for more than 1 workday.
+problems (such as server not being responsive) within several working days.
 
 The service is aimed to improve the workflow of LLVM contributors and relieve
 the burden of having to use a very powerful machine for editing code by
