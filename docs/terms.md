@@ -22,7 +22,7 @@ For more information about remote index feature and its design, please see
 [documentation](https://clangd.llvm.org/remote-index.html).
 
 Both the service and the code it runs are available publicly for all interested
-parties. Please check the [privacy document](llvm.clangd-index.dev/privacy) to
+parties. Please check the [privacy document](domain/privacy) to
 learn more about how we keep your data secure and where you can inspect the
 code.
 
