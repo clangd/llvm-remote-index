@@ -30,7 +30,7 @@ These logs help maintainers monitor and identify problems with the service and
 improve it over time. We [run the
 server](https://github.com/clangd/llvm-remote-index/blob/master/deployment/entry_point.sh)
 with `--log-public` option within a Docker
-[container](https://github.com/clangd/llvm-remote-index/blob/master/deployment/Dockerfile).
+[container](https://github.com/clangd/llvm-remote-index/blob/master/docker/Dockerfile).
 All [deployment
 scripts](https://github.com/clangd/llvm-remote-index/tree/master/deployment)
 are also public.
