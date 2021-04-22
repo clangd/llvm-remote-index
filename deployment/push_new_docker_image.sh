@@ -1,7 +1,7 @@
 #!/bin/bash
 source args.sh
 
-SERVER_ASSET_PREFIX="clangd-indexing-tools-linux"
+SERVER_ASSET_PREFIX="clangd_indexing_tools-linux"
 OUTPUT_NAME="$SERVER_ASSET_PREFIX.zip"
 
 TEMP_DIR="$(mktemp -d)"
