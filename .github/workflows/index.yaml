@@ -75,12 +75,14 @@ jobs:
           # FIXME: Move indexing-tools to clangd org or wait for the merge with
           # clangd/clangd.
 
+          ASSET_PREFIX="clangd_indexing_tools-linux"
+
           ./download_latest_release_assets.py
           --repository clangd/clangd
-          --output-name clangd-indexing-tools.zip
-          --asset-prefix clangd_indexing_tools-linux
+          --output-name $ASSET_PREFIX.zip
+          --asset-prefix $ASSET_PREFIX
 
-          unzip clangd_indexing_tools.zip
+          unzip $ASSET_PREFIX.zip
 
           echo "CLANGD_INDEXER_BIN=$(find . -name 'clangd-indexer')"
           >> $GITHUB_ENV
