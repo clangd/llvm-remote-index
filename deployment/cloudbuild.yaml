@@ -1,0 +1,11 @@
+steps:
+  - name: gcr.io/google.com/cloudsdktool/cloud-sdk
+    args:
+      - bash
+      - '-c'
+      - >-
+        apt-get install -y unzip &&
+        pip install requests &&
+        cd deployment &&
+        bash rollout_new_release.sh live &&
+        bash rollout_new_release.sh staging
