@@ -1,5 +1,7 @@
 FROM debian:stable
-RUN apt-get update && apt-get install -y cron python3 python3-requests unzip
+RUN apt-get update -y && apt-get upgrade -y
+RUN apt-get install -y cron python3 python3-requests unzip nginx-light
+RUN rm -rf /var/www/html/*
 WORKDIR "/"
 
 ARG REPOSITORY

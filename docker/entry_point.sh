@@ -13,8 +13,13 @@ echo "0 */6 * * * $INDEX_FETCHER_CMD" > crontab_schedule.txt
 crontab crontab_schedule.txt
 cron
 
+# Start the nginx server. Contents in /var/www/html are served at *:80.
+service nginx start
+
 # Fetch index once.
 $INDEX_FETCHER_CMD
 
+# Start the nginx server. Contents in /var/www/html are served at *:80.
+service nginx start
 # Start the server.
 /clangd-index-server $INDEX_FILE $INDEXER_PROJECT_ROOT -log-public
