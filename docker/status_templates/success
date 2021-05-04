@@ -1,0 +1,7 @@
+{% set uptime_seconds_int = uptime_seconds | int %}
+{% set index_age_seconds_int = index_age_seconds | int %}
+<pre style="background-color: #efd">
+{{INSTANCE_NAME}}:
+Uptime: {{uptime_seconds_int // 3600 // 24}} days {{(uptime_seconds_int // 3600) % 24}} hours {{(uptime_seconds_int // 60) % 60}} minutes {{uptime_seconds_int % 60}} seconds.
+Index age: {{index_age_seconds_int // 3600}} hours {{(index_age_seconds_int // 60) % 60}} minutes {{index_age_seconds_int % 60}} seconds.
+</pre>
