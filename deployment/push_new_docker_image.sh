@@ -13,6 +13,8 @@ trap "rm -r $TEMP_DIR" EXIT
 cp ../docker/Dockerfile "$TEMP_DIR/"
 cp ../docker/index_fetcher.sh "$TEMP_DIR/"
 cp ../docker/entry_point.sh "$TEMP_DIR/"
+cp ../docker/status_updater.sh "$TEMP_DIR/"
+cp -r ../docker/status_templates "$TEMP_DIR/"
 cp ../download_latest_release_assets.py "$TEMP_DIR/"
 cd "$TEMP_DIR"
 
@@ -21,14 +23,15 @@ cd "$TEMP_DIR"
   --repository="clangd/clangd" \
   --asset-prefix="$SERVER_ASSET_PREFIX" \
   --output-name="$OUTPUT_NAME"
-# Only extract clangd-index-server.
-unzip -j "$OUTPUT_NAME" "*/bin/clangd-index-server"
-chmod +x clangd-index-server
+# Extract clangd-index-server and monitor.
+unzip -j "$OUTPUT_NAME" "*/bin/clangd-index-server*"
+chmod +x clangd-index-server clangd-index-server-monitor
 
 # Build the image, tag it for GCR and push.
 docker build --build-arg REPOSITORY="$INDEX_REPO" \
   --build-arg INDEX_ASSET_PREFIX="$INDEX_ASSET_PREFIX" \
   --build-arg INDEXER_PROJECT_ROOT="$INDEXER_PROJECT_ROOT" \
+  --build-arg PROJECT_NAME="$PROJECT_ID" \
   -t "$IMAGE_IN_GCR" .
 gcloud auth configure-docker
 docker push "$IMAGE_IN_GCR"
