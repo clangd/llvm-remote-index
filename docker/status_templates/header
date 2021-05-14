@@ -1,5 +1,18 @@
 <html lang="en">
 <head>
-<title>Status page for {{PROJECT_NAME}}</title>
+<title>{{PROJECT_NAME}}</title>
+<style>
+.preview-page {
+  margin-top: 64px;
+}
+</style>
 </head>
 <body>
+<div class="page">
+<div id="preview-page" class="preview-page">
+<div role="main" class="main-content">
+<div class="container new-discussion-timeline experiment-repo-nav">
+<div class="repository-content">
+<div id="readme" class="readme boxed-group clearfix announce instapaper_body md">
+<article class="markdown-body entry-content" itemprop="text" id="grip-content">
+<h1>{{PROJECT_NAME}} status page</h1>

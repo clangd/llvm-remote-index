@@ -5,7 +5,7 @@ steps:
       - '-c'
       - >-
         apt-get install -y unzip &&
-        pip install requests &&
+        pip install requests grip j2cli &&
         cd deployment &&
         bash rollout_new_release.sh live &&
         bash rollout_new_release.sh staging

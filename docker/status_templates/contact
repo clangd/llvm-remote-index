@@ -1,0 +1,11 @@
+<hr />
+<p style="text-align:right">
+You can raise any issues about this service in
+<a href="https://github.com/{{REPOSITORY}}/issues">{{REPOSITORY}}</a>.
+</p>
+<p style="text-align:center">
+  <a href="/">Landing</a> | 
+  <a href="/status.html">Status</a> | 
+  <a href="/privacy.html">Privacy policy</a> | 
+  <a href="/terms.html">Terms and conditions</a>
+</p>
