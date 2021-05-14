@@ -2,7 +2,7 @@
 
 INDEX_FILE="/index.idx"
 INDEX_FETCHER_CMD="/index_fetcher.sh $REPOSITORY $INDEX_ASSET_PREFIX $INDEX_FILE"
-STATUS_UPDATER_CMD="/status_updater.sh $PROJECT_NAME"
+STATUS_UPDATER_CMD="/status_updater.sh $PROJECT_NAME $REPOSITORY"
 INSTANCE_PORTS="50051"
 STATUS_UPDATER_CMD="${STATUS_UPDATER_CMD} ${INSTANCE_PORTS}"
 
@@ -19,6 +19,9 @@ echo "0 */6 * * * $INDEX_FETCHER_CMD" >> crontab_schedule.txt
 echo "* * * * * $STATUS_UPDATER_CMD" >> crontab_schedule.txt
 crontab crontab_schedule.txt
 cron
+
+# Move static files to serving directory.
+cp -r docs/* /var/www/html/
 
 # Run status updater at startup to generate error file.
 $STATUS_UPDATER_CMD

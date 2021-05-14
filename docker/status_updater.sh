@@ -6,12 +6,14 @@ TMPL_DIR="/status_templates"
 HEADER_TMPL="$TMPL_DIR/header"
 SUCCESS_TMPL="$TMPL_DIR/success"
 FAILURE_TMPL="$TMPL_DIR/failure"
+CONTACT_TMPL="$TMPL_DIR/contact"
 FOOTER_TMPL="$TMPL_DIR/footer"
-OUT_FILE="/var/www/html/index.html"
+OUT_FILE="/var/www/html/status.html"
 
 if [[ $# -lt 2 ]]; then
-  echo "Usage: $0 PROJECT_NAME PORTS..."
+  echo "Usage: $0 PROJECT_NAME REPOSITORY PORTS..."
   echo "  PROJECT_NAME - e.g. llvm-remote-index"
+  echo "  REPOSITORY - e.g. clangd/llvm-remote-index"
   echo "  PORTS... - One or more ports on the localhost serving an index-server"
   exit
 fi
@@ -33,6 +35,8 @@ trap "rm -f $TEMP_OUT_FILE" EXIT
 # Env variables used by templates.
 export HOST_NAME="$(hostname -s)"
 export PROJECT_NAME="$1"
+shift
+export REPOSITORY="$1"
 shift
 
 j2 $HEADER_TMPL >> $TEMP_OUT_FILE
@@ -56,6 +60,7 @@ do
     j2 --format=json -e '' "$TMPL_FILE" "$TEMP_DATA_FILE" >> $TEMP_OUT_FILE
 done
 
+j2 $CONTACT_TMPL >> $TEMP_OUT_FILE
 j2 $FOOTER_TMPL >> $TEMP_OUT_FILE
 
 mv $TEMP_OUT_FILE $OUT_FILE

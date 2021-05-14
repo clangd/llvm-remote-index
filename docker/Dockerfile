@@ -20,6 +20,7 @@ ENV PROJECT_NAME ${PROJECT_NAME}
 ADD "clangd-index-server" "clangd-index-server"
 ADD "clangd-index-server-monitor" "clangd-index-server-monitor"
 ADD "status_templates" "/status_templates"
+ADD "docs" "/docs"
 ADD "download_latest_release_assets.py" "download_latest_release_assets.py"
 ADD "index_fetcher.sh" "index_fetcher.sh"
 ADD "entry_point.sh" "entry_point.sh"
