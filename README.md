@@ -2,6 +2,9 @@
 
 [![Index LLVM project](https://github.com/clangd/llvm-remote-index/workflows/Index%20LLVM%20project/badge.svg)](https://github.com/clangd/llvm-remote-index/actions)
 
+Scripts for running and maintaining the
+[LLVM Remote Index Service](http://clangd-index.llvm.org/).
+
 ## Repo Layout
 
 [deployment](deployment/) contains the script used to deploy a remote-index
