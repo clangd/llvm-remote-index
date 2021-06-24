@@ -30,7 +30,7 @@ do
   bash /start_server.sh "$INDEX_FETCHER_CMD" $INDEX_FILE $INDEXER_PROJECT_ROOT \
     $PORT $INDEX_ASSET_PREFIX &
   # Watch instance.
-  STATUS_UPDATER_CMD="${STATUS_UPDATER_CMD} ${PORT}"
+  STATUS_UPDATER_CMD="${STATUS_UPDATER_CMD} ${ASSET_PORT_PAIR}"
 done
 # Update status every minute.
 echo "* * * * * $STATUS_UPDATER_CMD" >> crontab_schedule.txt
