@@ -14,7 +14,8 @@ if [[ $# -lt 2 ]]; then
   echo "Usage: $0 PROJECT_NAME REPOSITORY PORTS..."
   echo "  PROJECT_NAME - e.g. llvm-remote-index"
   echo "  REPOSITORY - e.g. clangd/llvm-remote-index"
-  echo "  PORTS... - One or more ports on the localhost serving an index-server"
+  echo "  NAME:PORT pairs... - One or more name:port pairs. Name is displayed \
+    on the status page and port is used to query an index-server on the localhost"
   exit
 fi
 
@@ -44,9 +45,10 @@ j2 $HEADER_TMPL >> $TEMP_OUT_FILE
 # All the remaining args are ports on the local machine to connect.
 while [[ $# -gt 0 ]];
 do
-  PORT="$1"
+  NAME=${1%:*}
+  PORT=${1#*:}
   shift
-  export INSTANCE_NAME="${HOST_NAME}:${PORT}"
+  export INSTANCE_NAME="${HOST_NAME}/${NAME}"
 
   if /clangd-index-server-monitor "localhost:${PORT}" > $TEMP_DATA_FILE; then
     TMPL_FILE=$SUCCESS_TMPL
