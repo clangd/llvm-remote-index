@@ -58,7 +58,7 @@ chmod +x clangd-index-server clangd-index-server-monitor
 
 # Build the image, tag it for GCR and push.
 docker build --build-arg REPOSITORY="$INDEX_REPO" \
-  --build-arg INDEX_ASSET_PREFIX="$INDEX_ASSET_PREFIX" \
+  --build-arg INDEX_ASSET_PORT_PAIRS="$INDEX_ASSET_PORT_PAIRS" \
   --build-arg INDEXER_PROJECT_ROOT="$INDEXER_PROJECT_ROOT" \
   --build-arg PROJECT_NAME="$PROJECT_ID" \
   -t "$IMAGE_IN_GCR" .
