@@ -25,8 +25,9 @@ BASE_INSTANCE_NAME="${PROJECT_ID}-server"
 # Which github repository to use for fetching index artifacts.
 INDEX_REPO="clangd/llvm-remote-index"
 
-# Prefix of the index file in the github release artifacts.
-INDEX_ASSET_PREFIX="llvm-index"
+# Artifact prefix to fetch the index from and port number to serve it on.
+# Separated by `:`.
+INDEX_ASSET_PORT_PAIRS="llvm-index:50051"
 
 # Absolute path to project root on indexer machine, passed to
 # clangd-index-server.
