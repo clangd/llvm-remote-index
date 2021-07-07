@@ -25,5 +25,6 @@ ADD "download_latest_release_assets.py" "download_latest_release_assets.py"
 ADD "index_fetcher.sh" "index_fetcher.sh"
 ADD "entry_point.sh" "entry_point.sh"
 ADD "status_updater.sh" "status_updater.sh"
+ADD "start_server.sh" "start_server.sh"
 
 ENTRYPOINT ["/entry_point.sh"]
