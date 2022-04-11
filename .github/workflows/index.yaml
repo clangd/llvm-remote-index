@@ -86,8 +86,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
         with:
-          tag_name: ${{ env.RELEASE_COMMIT_SHORT }}
-          release_name: ${{ env.RELEASE_COMMIT_SHORT }}
+          tag_name: index/${{ env.RELEASE_DATE }}
+          release_name: ${{ env.RELEASE_DATE }}
           body: |
             Index snapshot built from llvm/llvm-project@${{ env.RELEASE_COMMIT }} on ${{ env.RELEASE_DATE }}.
       - name: Upload generated index to release
