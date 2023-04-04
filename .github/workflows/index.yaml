@@ -18,6 +18,24 @@ jobs:
     steps:
       - name: Clone scripts
         uses: actions/checkout@v2
+      - name: Install system tools
+        run: sudo apt-get install ninja-build build-essential swig python3-dev libedit-dev libncurses5-dev
+      - name: Set environment variables
+        run: |
+          echo "CMAKE_BUILD_DIR=llvm-project/build" >> $GITHUB_ENV
+      - name: Fetch clangd-indexer
+        run: >
+          ASSET_PREFIX="clangd_indexing_tools-linux"
+
+          ./download_latest_release_assets.py
+          --repository clangd/clangd
+          --output-name $ASSET_PREFIX.zip
+          --asset-prefix $ASSET_PREFIX
+
+          unzip $ASSET_PREFIX.zip
+
+          echo "CLANGD_INDEXER_BIN=$(find . -name 'clangd-indexer')"
+          >> $GITHUB_ENV
       - name: Clone LLVM
         uses: actions/checkout@v2
         with:
@@ -30,11 +48,6 @@ jobs:
           echo "RELEASE_COMMIT=$(git -C llvm-project rev-parse HEAD)" >> $GITHUB_ENV
           echo "RELEASE_COMMIT_SHORT=$(printf '%.12s' $(git -C llvm-project rev-parse HEAD))" >> $GITHUB_ENV
           echo "RELEASE_DATE=$(date -u +%Y%m%d)" >> $GITHUB_ENV
-      - name: Install system tools
-        run: sudo apt-get install ninja-build build-essential swig python3-dev libedit-dev libncurses5-dev
-      - name: Set environment variables
-        run: |
-          echo "CMAKE_BUILD_DIR=llvm-project/build" >> $GITHUB_ENV
       # Build generated files.
       - name: CMake
         run: >
@@ -60,19 +73,6 @@ jobs:
           "-DLLVM_ENABLE_PROJECTS=all"
           "-DCMAKE_BUILD_TYPE=Debug"
           "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON"
-      - name: Fetch clangd-indexer
-        run: >
-          ASSET_PREFIX="clangd_indexing_tools-linux"
-
-          ./download_latest_release_assets.py
-          --repository clangd/clangd
-          --output-name $ASSET_PREFIX.zip
-          --asset-prefix $ASSET_PREFIX
-
-          unzip $ASSET_PREFIX.zip
-
-          echo "CLANGD_INDEXER_BIN=$(find . -name 'clangd-indexer')"
-          >> $GITHUB_ENV
       - name: Run clangd-indexer
         run: >
           ${{ env.CLANGD_INDEXER_BIN }} --executor=all-TUs
