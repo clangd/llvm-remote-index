@@ -1,4 +1,7 @@
 #!/bin/bash
+source args.sh
+source instance_group_management.sh
+
 TARGET="$1"
 
 case $TARGET in
@@ -12,9 +15,6 @@ case $TARGET in
     echo "Usage: $0 [staging | live]"
     exit 1
 esac
-
-source args.sh
-source instance_group_management.sh
 
 # Fetch latest image sha from GCR.
 IMAGE_SHA=$(gcloud container images list-tags $IMAGE_IN_GCR --format=yaml --limit=1 | grep -i digest | cut -d' ' -f2)
