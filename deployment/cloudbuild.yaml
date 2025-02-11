@@ -4,8 +4,8 @@ steps:
       - bash
       - '-c'
       - >-
-        apt-get install -y unzip &&
-        pip install requests grip j2cli &&
+        apt-get install -y unzip python3-requests &&
+        pip install --break-system-packages grip j2cli &&
         cd deployment &&
         bash rollout_new_release.sh live &&
         bash rollout_new_release.sh staging
