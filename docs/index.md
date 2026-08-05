@@ -1,3 +1,6 @@
+> [!CAUTION]
+> # Central llvm remote index server has been turned down. It's no longer possible to use it.
+
 # LLVM remote index server
 
 This server provides about a day old index for
